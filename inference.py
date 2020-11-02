@@ -6,16 +6,20 @@ import torch
 import torch.nn.functional as F
 
 from utils import AverageMeter
+from datasets.Class_define import kinetics_700_labels, ucf_101_class
 
+
+calssid = {}
 
 def get_video_results(outputs, class_names, output_topk):
     sorted_scores, locs = torch.topk(outputs,
                                      k=min(output_topk, len(class_names)))
 
+    original_label = kinetics_700_labels
     video_results = []
     for i in range(sorted_scores.size(0)):
         video_results.append({
-            'label': class_names[locs[i].item()],
+            'label': original_label[locs[i].item()],
             'score': sorted_scores[i].item()
         })
 

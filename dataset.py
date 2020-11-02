@@ -5,7 +5,7 @@ from datasets.videodataset_multiclips import (VideoDatasetMultiClips,
                                               collate_fn)
 from datasets.activitynet import ActivityNet
 from datasets.loader import VideoLoader, VideoLoaderHDF5, VideoLoaderFlowHDF5
-
+from datasets.BlackAIdataset import BlackAIdataset_
 
 def image_name_formatter(x):
     return f'image_{x:05d}.jpg'
@@ -54,9 +54,17 @@ def get_training_data(video_path,
                                     video_loader=loader,
                                     video_path_formatter=video_path_formatter)
     else:
-        training_data = VideoDataset(video_path,
+        # training_data = VideoDataset(video_path,
+        #                              annotation_path,
+        #                              'training',
+        #                              spatial_transform=spatial_transform,
+        #                              temporal_transform=temporal_transform,
+        #                              target_transform=target_transform,
+        #                              video_loader=loader,
+        #                              video_path_formatter=video_path_formatter)
+        training_data = BlackAIdataset_(video_path,
                                      annotation_path,
-                                     'training',
+                                     'train',
                                      spatial_transform=spatial_transform,
                                      temporal_transform=temporal_transform,
                                      target_transform=target_transform,

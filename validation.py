@@ -84,4 +84,4 @@ def val_epoch(epoch,
         tb_writer.add_scalar('val/loss', losses.avg, epoch)
         tb_writer.add_scalar('val/acc', accuracies.avg, epoch)
 
-    return losses.avg
+    return losses.avg, accuracies.avg

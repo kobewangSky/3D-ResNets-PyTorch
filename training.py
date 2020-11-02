@@ -9,6 +9,7 @@ import torch.distributed as dist
 from utils import AverageMeter, calculate_accuracy
 
 
+
 def train_epoch(epoch,
                 data_loader,
                 model,
@@ -62,13 +63,15 @@ def train_epoch(epoch,
               'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
               'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
               'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-              'Acc {acc.val:.3f} ({acc.avg:.3f})'.format(epoch,
+              'Acc {acc.val:.3f} ({acc.avg:.3f})\t'
+              'lr {lr:.3f} '.format(epoch,
                                                          i + 1,
                                                          len(data_loader),
                                                          batch_time=batch_time,
                                                          data_time=data_time,
                                                          loss=losses,
-                                                         acc=accuracies))
+                                                         acc=accuracies,
+                                                         lr = current_lr))
 
     if distributed:
         loss_sum = torch.tensor([losses.sum],
@@ -104,3 +107,4 @@ def train_epoch(epoch,
         tb_writer.add_scalar('train/loss', losses.avg, epoch)
         tb_writer.add_scalar('train/acc', accuracies.avg, epoch)
         tb_writer.add_scalar('train/lr', accuracies.avg, epoch)
+    return losses.avg, accuracies.avg

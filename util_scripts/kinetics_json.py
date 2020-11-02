@@ -4,8 +4,19 @@ from pathlib import Path
 
 import pandas as pd
 
-from .utils import get_n_frames, get_n_frames_hdf5
+#from .utils import get_n_frames, get_n_frames_hdf5
 
+def get_n_frames(video_path):
+    return len([
+        x for x in video_path.iterdir()
+        if 'image' in x.name and x.name[0] != '.'
+    ])
+
+
+def get_n_frames_hdf5(video_path):
+    with h5py.File(video_path, 'r') as f:
+        video_data = f['video']
+        return len(video_data)
 
 def convert_csv_to_dict(csv_path, subset):
     data = pd.read_csv(csv_path)
@@ -107,11 +118,11 @@ if __name__ == '__main__':
     assert args.video_type in ['jpg', 'hdf5']
 
     train_csv_path = (args.dir_path /
-                      'kinetics-{}_train.csv'.format(args.n_classes))
+                      'train.csv')
     val_csv_path = (args.dir_path /
-                    'kinetics-{}_val.csv'.format(args.n_classes))
+                    'validate.csv')
     test_csv_path = (args.dir_path /
-                     'kinetics-{}_test.csv'.format(args.n_classes))
+                     'test.csv')
 
     convert_kinetics_csv_to_json(train_csv_path, val_csv_path, test_csv_path,
                                  args.video_path, args.video_type,

@@ -30,6 +30,7 @@ from utils import Logger, worker_init_fn, get_lr
 from training import train_epoch
 from validation import val_epoch
 import inference
+import wandb
 
 
 def json_serial(obj):
@@ -58,6 +59,8 @@ def get_opt():
 
     if opt.inference_batch_size == 0:
         opt.inference_batch_size = opt.batch_size
+
+    wandb.init(project="action", config={"batch_size": opt.batch_size})
 
     opt.arch = '{}-{}'.format(opt.model, opt.model_depth)
     opt.begin_epoch = 1
@@ -377,14 +380,21 @@ def main_worker(index, opt):
         tb_writer = None
 
     prev_val_loss = None
+    largest_val_acc = 0.0
     for i in range(opt.begin_epoch, opt.n_epochs + 1):
+        wandb.log({"Epoch": i})
         if not opt.no_train:
             if opt.distributed:
                 train_sampler.set_epoch(i)
             current_lr = get_lr(optimizer)
-            train_epoch(i, train_loader, model, criterion, optimizer,
+            train_loss, train_acc = train_epoch(i, train_loader, model, criterion, optimizer,
                         opt.device, current_lr, train_logger,
                         train_batch_logger, tb_writer, opt.distributed)
+
+
+            wandb.log({"train_loss_avg": train_loss})
+            wandb.log({"train_acc_avg": train_acc})
+            wandb.log({"train_lr": current_lr})
 
             if i % opt.checkpoint == 0 and opt.is_master_node:
                 save_file_path = opt.result_path / 'save_{}.pth'.format(i)
@@ -392,9 +402,14 @@ def main_worker(index, opt):
                                 scheduler)
 
         if not opt.no_val:
-            prev_val_loss = val_epoch(i, val_loader, model, criterion,
+            prev_val_loss, val_acc = val_epoch(i, val_loader, model, criterion,
                                       opt.device, val_logger, tb_writer,
                                       opt.distributed)
+            wandb.log({"val_acc_avg": val_acc})
+            if largest_val_acc < val_acc:
+                save_file_path = opt.result_path / 'best_save.pth'
+                save_checkpoint(save_file_path, i, opt.arch, model, optimizer,
+                                scheduler)
 
         if not opt.no_train and opt.lr_scheduler == 'multistep':
             scheduler.step()

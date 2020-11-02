@@ -6,6 +6,7 @@ import torch
 from torch.utils.data.dataloader import default_collate
 
 from .videodataset import VideoDataset
+from .BlackAIdataset import BlackAIdataset_
 
 
 def collate_fn(batch):
@@ -23,7 +24,7 @@ def collate_fn(batch):
         return default_collate(batch_clips), batch_targets
 
 
-class VideoDatasetMultiClips(VideoDataset):
+class VideoDatasetMultiClips(BlackAIdataset_):
 
     def __loading(self, path, video_frame_indices):
         clips = []

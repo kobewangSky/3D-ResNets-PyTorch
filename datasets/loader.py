@@ -2,16 +2,18 @@ import io
 
 import h5py
 from PIL import Image
+import os
 
 
 class ImageLoaderPIL(object):
 
     def __call__(self, path):
         # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
-        with path.open('rb') as f:
-            with Image.open(f) as img:
-                return img.convert('RGB')
-
+        # with path.open('rb') as f:
+        #     with Image.open(f) as img:
+        #         return img.convert('RGB')
+        img = Image.open(path).convert('RGB')
+        return img
 
 class ImageLoaderAccImage(object):
 
@@ -32,8 +34,9 @@ class VideoLoader(object):
     def __call__(self, video_path, frame_indices):
         video = []
         for i in frame_indices:
-            image_path = video_path / self.image_name_formatter(i)
-            if image_path.exists():
+            image_path = os.path.join(video_path, str(i).zfill(4)+'.png')
+            #image_path = video_path / self.image_name_formatter(i)
+            if os.path.exists(image_path):
                 video.append(self.image_loader(image_path))
 
         return video
